@@ -1,0 +1,81 @@
+{
+  "driftcheck_version": "0.1.0",
+  "_synthetic": "Synthetic responses, real pipeline. Generated without API calls to show output shape.",
+  "run": {
+    "prompt": "best running shoes for flat feet",
+    "model": "claude-opus-5",
+    "n": 30,
+    "max_tokens": 1024,
+    "effort": "low",
+    "temperature": null,
+    "seed": null,
+    "run_at": "2026-08-13T08:51:56+00:00"
+  },
+  "brands": [
+    {
+      "name": "Brooks",
+      "n": 30,
+      "mentions": 27,
+      "mention_rate": 0.9,
+      "mean_rank": 1.778,
+      "rank_stdev": 0.974,
+      "rank_ci95": [
+        1.41,
+        2.145
+      ]
+    },
+    {
+      "name": "Hoka",
+      "n": 30,
+      "mentions": 22,
+      "mention_rate": 0.7333,
+      "mean_rank": 2.091,
+      "rank_stdev": 0.868,
+      "rank_ci95": [
+        1.728,
+        2.454
+      ]
+    },
+    {
+      "name": "ASICS",
+      "n": 30,
+      "mentions": 15,
+      "mention_rate": 0.5,
+      "mean_rank": 1.733,
+      "rank_stdev": 0.704,
+      "rank_ci95": [
+        1.377,
+        2.089
+      ]
+    },
+    {
+      "name": "New Balance",
+      "n": 30,
+      "mentions": 8,
+      "mention_rate": 0.2667,
+      "mean_rank": 2.25,
+      "rank_stdev": 0.886,
+      "rank_ci95": [
+        1.636,
+        2.864
+      ]
+    },
+    {
+      "name": "Saucony",
+      "n": 30,
+      "mentions": 3,
+      "mention_rate": 0.1,
+      "mean_rank": 1.333,
+      "rank_stdev": 0.577,
+      "rank_ci95": [
+        0.68,
+        1.987
+      ]
+    }
+  ],
+  "noise_floor": {
+    "mention_rate": 0.253,
+    "mean_rank": 0.621,
+    "note": "Against a second batch of n=30, changes smaller than these are indistinguishable from run-to-run variance at 95% confidence. The mention-rate floor is worst-case (p=0.5); the mean-rank floor uses the median observed rank spread."
+  }
+}
