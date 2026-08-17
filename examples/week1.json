@@ -1,0 +1,81 @@
+{
+  "driftcheck_version": "0.2.0",
+  "run": {
+    "prompt": "best running shoes for flat feet",
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "n": 30,
+    "max_tokens": 2048,
+    "effort": "low",
+    "temperature": null,
+    "seed": null,
+    "run_at": "2026-08-17T15:27:14+00:00"
+  },
+  "brands": [
+    {
+      "name": "ASICS",
+      "n": 30,
+      "mentions": 30,
+      "mention_rate": 1.0,
+      "mean_rank": 2.167,
+      "rank_stdev": 0.747,
+      "rank_ci95": [
+        1.899,
+        2.434
+      ]
+    },
+    {
+      "name": "Brooks",
+      "n": 30,
+      "mentions": 30,
+      "mention_rate": 1.0,
+      "mean_rank": 1.2,
+      "rank_stdev": 0.407,
+      "rank_ci95": [
+        1.054,
+        1.346
+      ]
+    },
+    {
+      "name": "Hoka",
+      "n": 30,
+      "mentions": 29,
+      "mention_rate": 0.9667,
+      "mean_rank": 2.897,
+      "rank_stdev": 0.9,
+      "rank_ci95": [
+        2.569,
+        3.224
+      ]
+    },
+    {
+      "name": "New Balance",
+      "n": 30,
+      "mentions": 23,
+      "mention_rate": 0.7667,
+      "mean_rank": 4.696,
+      "rank_stdev": 0.47,
+      "rank_ci95": [
+        4.503,
+        4.888
+      ]
+    },
+    {
+      "name": "Saucony",
+      "n": 30,
+      "mentions": 30,
+      "mention_rate": 1.0,
+      "mean_rank": 3.9,
+      "rank_stdev": 0.607,
+      "rank_ci95": [
+        3.683,
+        4.117
+      ]
+    }
+  ],
+  "noise_floor": {
+    "mention_rate": 0.253,
+    "mean_rank": 0.307,
+    "note": "Against a second batch of n=30, changes smaller than these are indistinguishable from run-to-run variance at 95% confidence. The mention-rate floor is worst-case (p=0.5); the mean-rank floor uses the median observed rank spread."
+  }
+}

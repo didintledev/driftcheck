@@ -55,6 +55,12 @@ def generate(model, prompt, max_tokens, effort="low", temperature=None) -> str:
     message = _client().messages.create(**kwargs)
     if message.stop_reason == "refusal":
         raise RuntimeError("Model refused the prompt; the batch is not a valid measurement.")
+    if message.stop_reason == "max_tokens":
+        # Truncation drops whichever brands came last; see gemini.py.
+        raise RuntimeError(
+            f"Hit the {max_tokens}-token ceiling and the response was cut off; "
+            "a truncated answer biases against late-mentioned brands. Raise --max-tokens."
+        )
     text = "".join(b.text for b in message.content if b.type == "text")
     if not text.strip():
         raise RuntimeError("Empty response; the batch is not a valid measurement.")

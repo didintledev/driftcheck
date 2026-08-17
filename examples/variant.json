@@ -1,0 +1,81 @@
+{
+  "driftcheck_version": "0.2.0",
+  "run": {
+    "prompt": "best cushioned running shoes for long distance",
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "n": 30,
+    "max_tokens": 2048,
+    "effort": "low",
+    "temperature": null,
+    "seed": null,
+    "run_at": "2026-08-17T15:32:29+00:00"
+  },
+  "brands": [
+    {
+      "name": "ASICS",
+      "n": 30,
+      "mentions": 30,
+      "mention_rate": 1.0,
+      "mean_rank": 1.333,
+      "rank_stdev": 0.711,
+      "rank_ci95": [
+        1.079,
+        1.588
+      ]
+    },
+    {
+      "name": "Brooks",
+      "n": 30,
+      "mentions": 29,
+      "mention_rate": 0.9667,
+      "mean_rank": 2.414,
+      "rank_stdev": 0.946,
+      "rank_ci95": [
+        2.07,
+        2.758
+      ]
+    },
+    {
+      "name": "Hoka",
+      "n": 30,
+      "mentions": 30,
+      "mention_rate": 1.0,
+      "mean_rank": 3.167,
+      "rank_stdev": 1.341,
+      "rank_ci95": [
+        2.687,
+        3.647
+      ]
+    },
+    {
+      "name": "New Balance",
+      "n": 30,
+      "mentions": 24,
+      "mention_rate": 0.8,
+      "mean_rank": 4.375,
+      "rank_stdev": 0.824,
+      "rank_ci95": [
+        4.045,
+        4.705
+      ]
+    },
+    {
+      "name": "Saucony",
+      "n": 30,
+      "mentions": 29,
+      "mention_rate": 0.9667,
+      "mean_rank": 3.448,
+      "rank_stdev": 0.736,
+      "rank_ci95": [
+        3.18,
+        3.716
+      ]
+    }
+  ],
+  "noise_floor": {
+    "mention_rate": 0.253,
+    "mean_rank": 0.424,
+    "note": "Against a second batch of n=30, changes smaller than these are indistinguishable from run-to-run variance at 95% confidence. The mention-rate floor is worst-case (p=0.5); the mean-rank floor uses the median observed rank spread."
+  }
+}

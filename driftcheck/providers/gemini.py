@@ -19,22 +19,30 @@ __all__ = ["ENV_KEY", "DEFAULT_MODEL", "RPM", "PRICING", "FREE_NOTE",
            "count_input_tokens", "generate"]
 
 ENV_KEY = "GEMINI_API_KEY"
-DEFAULT_MODEL = "gemini-2.5-flash-lite"
 
-# Free-tier request limit for flash-lite. The batch runner paces to this, so a
-# 30-run batch takes ~2 minutes and never trips a 429.
+# Pinned deliberately. `gemini-flash-lite-latest` also exists and resolves to
+# whatever is current — which would make two batches a week apart incomparable,
+# the exact error this tool is built to catch. Model ids get retired (2.5
+# flash-lite already 404s for new keys), so this needs bumping occasionally;
+# `driftcheck run --model` overrides it without a code change.
+DEFAULT_MODEL = "gemini-3.5-flash-lite"
+
+# Conservative free-tier pacing: Google publishes per-model RPM in AI Studio
+# rather than in a scrapable table, so this assumes the low end. The batch
+# runner paces to it, which keeps a 30-run batch at ~2 minutes and off the 429
+# path. `--rpm` raises it on a paid key; `--rpm 0` turns pacing off.
 RPM = 15
 
 FREE_NOTE = (
-    f"Free tier covers this model at {RPM} requests/minute — no card required. "
-    "The estimate below is what a paid key would cost."
+    f"Free tier covers this model at no charge; paced to {RPM} req/min. "
+    "The estimate above is what a paid key would cost instead."
 )
 
-# USD per million tokens (input, output), paid tier. Free tier bills nothing.
+# USD per million tokens (input, output), paid standard tier, verified against
+# ai.google.dev/gemini-api/docs/pricing on 2026-08-17. Free tier bills nothing.
 PRICING = {
-    "gemini-2.5-flash-lite": (0.10, 0.40),
-    "gemini-2.5-flash": (0.30, 2.50),
-    "gemini-2.5-pro": (1.25, 10.00),
+    "gemini-3.5-flash-lite": (0.30, 2.50),
+    "gemini-3.5-flash": (1.50, 9.00),
 }
 
 _BASE = "https://generativelanguage.googleapis.com/v1beta/models"
@@ -104,7 +112,15 @@ def generate(model, prompt, max_tokens, effort=None, temperature=None) -> str:
         raise RuntimeError("Gemini returned no candidates; the batch is not a valid measurement.")
 
     reason = candidates[0].get("finishReason")
-    if reason not in (None, "STOP", "MAX_TOKENS"):
+    if reason == "MAX_TOKENS":
+        # Not a smaller answer — a systematically biased one. Truncation drops
+        # whichever brands the model was going to mention last, which reads as
+        # a mention-rate change that never happened.
+        raise RuntimeError(
+            f"Gemini hit the {max_tokens}-token ceiling and the response was cut off; "
+            "a truncated answer biases against late-mentioned brands. Raise --max-tokens."
+        )
+    if reason not in (None, "STOP"):
         raise RuntimeError(
             f"Gemini stopped with finishReason={reason}; the batch is not a valid measurement."
         )

@@ -63,9 +63,10 @@ def run_batch(
     effort: str = "low",
     temperature: float | None = None,
     workers: int = 4,
+    rpm: float | None = None,
 ) -> list[str]:
     """Return N response texts, in request order. Raises if any run fails."""
-    limiter = RateLimiter(getattr(provider, "RPM", None))
+    limiter = RateLimiter(provider.RPM if rpm is None else rpm)
 
     def once(_):
         limiter.wait()

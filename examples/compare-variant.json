@@ -11,7 +11,7 @@
     "run_at": "2026-08-17T15:27:14+00:00"
   },
   "b": {
-    "prompt": "best running shoes for flat feet",
+    "prompt": "best cushioned running shoes for long distance",
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
     "n": 30,
@@ -19,7 +19,7 @@
     "effort": "low",
     "temperature": null,
     "seed": null,
-    "run_at": "2026-08-17T15:29:37+00:00"
+    "run_at": "2026-08-17T15:32:29+00:00"
   },
   "brands": [
     {
@@ -33,43 +33,43 @@
       },
       "mean_rank": {
         "a": 2.167,
-        "b": 2.2,
-        "delta": 0.033,
-        "noise_floor": 0.37,
-        "verdict": "noise"
+        "b": 1.333,
+        "delta": -0.834,
+        "noise_floor": 0.369,
+        "verdict": "signal"
       }
     },
     {
       "name": "Brooks",
       "mention_rate": {
         "a": 1.0,
-        "b": 1.0,
-        "delta": 0.0,
+        "b": 0.9667,
+        "delta": -0.0333,
         "noise_floor": 0.253,
         "verdict": "noise"
       },
       "mean_rank": {
         "a": 1.2,
-        "b": 1.167,
-        "delta": -0.033,
-        "noise_floor": 0.22,
-        "verdict": "noise"
+        "b": 2.414,
+        "delta": 1.214,
+        "noise_floor": 0.374,
+        "verdict": "signal"
       }
     },
     {
       "name": "Hoka",
       "mention_rate": {
         "a": 0.9667,
-        "b": 0.9333,
-        "delta": -0.0334,
+        "b": 1.0,
+        "delta": 0.0333,
         "noise_floor": 0.253,
         "verdict": "noise"
       },
       "mean_rank": {
         "a": 2.897,
-        "b": 2.893,
-        "delta": -0.004,
-        "noise_floor": 0.45,
+        "b": 3.167,
+        "delta": 0.27,
+        "noise_floor": 0.581,
         "verdict": "noise"
       }
     },
@@ -77,16 +77,16 @@
       "name": "New Balance",
       "mention_rate": {
         "a": 0.7667,
-        "b": 0.7,
-        "delta": -0.0667,
+        "b": 0.8,
+        "delta": 0.0333,
         "noise_floor": 0.253,
         "verdict": "noise"
       },
       "mean_rank": {
         "a": 4.696,
-        "b": 4.81,
-        "delta": 0.114,
-        "noise_floor": 0.258,
+        "b": 4.375,
+        "delta": -0.321,
+        "noise_floor": 0.382,
         "verdict": "noise"
       }
     },
@@ -94,19 +94,21 @@
       "name": "Saucony",
       "mention_rate": {
         "a": 1.0,
-        "b": 1.0,
-        "delta": 0.0,
+        "b": 0.9667,
+        "delta": -0.0333,
         "noise_floor": 0.253,
         "verdict": "noise"
       },
       "mean_rank": {
         "a": 3.9,
-        "b": 3.733,
-        "delta": -0.167,
-        "noise_floor": 0.286,
-        "verdict": "noise"
+        "b": 3.448,
+        "delta": -0.452,
+        "noise_floor": 0.345,
+        "verdict": "signal"
       }
     }
   ],
-  "warnings": []
+  "warnings": [
+    "Prompts differ; a difference here is not drift."
+  ]
 }

@@ -29,18 +29,19 @@ def _cmd_run(args) -> int:
     provider = providers.get(args.provider)
     model = args.model or provider.DEFAULT_MODEL
 
+    rpm = provider.RPM if args.rpm is None else args.rpm
     cost, input_tokens = estimate_cost(provider, prompt, model, args.n, args.max_tokens)
     lines = [
         f"{args.n} runs of {model} via {args.provider} "
         f"({input_tokens} input tokens, up to {args.max_tokens} output tokens each)",
         f"Estimated worst-case cost: ${cost:.2f}",
     ]
-    if getattr(provider, "FREE_NOTE", None):
+    if provider.FREE_NOTE:
         lines.append(provider.FREE_NOTE)
-    if provider.RPM:
+    if rpm:
         lines.append(
-            f"Paced to {provider.RPM} requests/minute: "
-            f"about {args.n / provider.RPM:.0f} minute(s) to run."
+            f"Paced to {rpm:g} requests/minute: "
+            f"about {max(1, round(args.n / rpm))} minute(s) to run."
         )
     print("\n".join(lines), file=sys.stderr)
 
@@ -58,6 +59,7 @@ def _cmd_run(args) -> int:
         effort=args.effort,
         temperature=args.temperature,
         workers=args.workers,
+        rpm=rpm,
     )
 
     run_ranks = [ranks(t, brands) for t in texts]
@@ -126,7 +128,9 @@ def main(argv=None) -> int:
         help=f"model provider (default {providers.DEFAULT})",
     )
     run.add_argument("--model", default=None, help="default: the provider's own")
-    run.add_argument("--max-tokens", type=int, default=1024)
+    # 2048, not 1024: a real "best X for Y" answer runs ~900-1000 tokens, and a
+    # response cut off at the ceiling is a failed run, not a shorter one.
+    run.add_argument("--max-tokens", type=int, default=2048)
     run.add_argument(
         "--effort",
         default="low",
@@ -140,6 +144,12 @@ def main(argv=None) -> int:
         help="not accepted by current Claude models; omitted unless set",
     )
     run.add_argument("--workers", type=int, default=4)
+    run.add_argument(
+        "--rpm",
+        type=float,
+        default=None,
+        help="override the provider's request pacing; 0 disables it",
+    )
     run.add_argument("--save-responses", action="store_true")
     run.add_argument("-o", "--out", help="write JSON here instead of stdout")
     run.add_argument("-y", "--yes", action="store_true", help="skip the cost prompt")
