@@ -5,7 +5,7 @@ import json
 import sys
 from datetime import datetime, timezone
 
-from . import __version__
+from . import __version__, providers
 from .compare import compare
 from .extract import ranks
 from .sample import estimate_cost, run_batch
@@ -26,24 +26,33 @@ def _load_brands(path: str) -> dict[str, list[str]]:
 def _cmd_run(args) -> int:
     brands = _load_brands(args.brands)
     prompt = args.prompt
+    provider = providers.get(args.provider)
+    model = args.model or provider.DEFAULT_MODEL
 
-    cost, input_tokens = estimate_cost(
-        prompt, args.model, args.n, args.max_tokens, args.effort, args.temperature
-    )
-    print(
-        f"{args.n} runs of {args.model} "
-        f"({input_tokens} input tokens, up to {args.max_tokens} output tokens each)\n"
+    cost, input_tokens = estimate_cost(provider, prompt, model, args.n, args.max_tokens)
+    lines = [
+        f"{args.n} runs of {model} via {args.provider} "
+        f"({input_tokens} input tokens, up to {args.max_tokens} output tokens each)",
         f"Estimated worst-case cost: ${cost:.2f}",
-        file=sys.stderr,
-    )
+    ]
+    if getattr(provider, "FREE_NOTE", None):
+        lines.append(provider.FREE_NOTE)
+    if provider.RPM:
+        lines.append(
+            f"Paced to {provider.RPM} requests/minute: "
+            f"about {args.n / provider.RPM:.0f} minute(s) to run."
+        )
+    print("\n".join(lines), file=sys.stderr)
+
     if not args.yes:
         if input("Proceed? [y/N] ").strip().lower() not in {"y", "yes"}:
             print("Aborted.", file=sys.stderr)
             return 1
 
     texts = run_batch(
+        provider,
         prompt,
-        args.model,
+        model,
         args.n,
         max_tokens=args.max_tokens,
         effort=args.effort,
@@ -58,7 +67,8 @@ def _cmd_run(args) -> int:
         "driftcheck_version": __version__,
         "run": {
             "prompt": prompt,
-            "model": args.model,
+            "provider": args.provider,
+            "model": model,
             "n": args.n,
             "max_tokens": args.max_tokens,
             "effort": args.effort,
@@ -109,10 +119,19 @@ def main(argv=None) -> int:
     run.add_argument("prompt")
     run.add_argument("--brands", required=True, help="path to a JSON brand list")
     run.add_argument("-n", type=int, default=30, help="runs in the batch (default 30)")
-    run.add_argument("--model", default="claude-opus-5")
+    run.add_argument(
+        "--provider",
+        default=providers.DEFAULT,
+        choices=providers.names(),
+        help=f"model provider (default {providers.DEFAULT})",
+    )
+    run.add_argument("--model", default=None, help="default: the provider's own")
     run.add_argument("--max-tokens", type=int, default=1024)
     run.add_argument(
-        "--effort", default="low", choices=["low", "medium", "high", "xhigh", "max"]
+        "--effort",
+        default="low",
+        choices=["low", "medium", "high", "xhigh", "max"],
+        help="Claude only; ignored by providers without an effort knob",
     )
     run.add_argument(
         "--temperature",

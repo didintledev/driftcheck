@@ -35,9 +35,11 @@ The floor is a property of your sample size, not your brand. At n=30 you cannot 
 
 ## Usage
 
+**The default setup costs nothing.** No card, no credits, no paid dependency. Get a free Google AI Studio key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey) and you can reproduce every number below.
+
 ```bash
-pip install -e .
-export ANTHROPIC_API_KEY=sk-ant-...        # or copy .env.example to .env
+pip install -e .                           # no dependencies
+export GEMINI_API_KEY=...                  # or copy .env.example to .env
 
 # brands.json: {"Brooks": ["Brooks Running"], "Hoka": ["Hoka One One"], "ASICS": []}
 driftcheck run "best running shoes for flat feet" --brands brands.json -n 30 -o week1.json
@@ -48,7 +50,17 @@ driftcheck run "best running shoes for flat feet" --brands brands.json -n 30 -o 
 driftcheck compare week1.json week2.json
 ```
 
-`run` prints a cost estimate and waits for confirmation before spending anything (`-y` to skip). Options: `--model`, `--max-tokens`, `--effort`, `--workers`, `--save-responses`.
+Default provider is Gemini on `gemini-2.5-flash-lite`, which the free tier covers at 15 requests per minute. The runner paces itself to that limit, so a 30-run batch takes about two minutes and bills nothing. `run` still prints what a paid key would cost and waits for confirmation (`-y` to skip), because "free" is a property of your key, not of the tool.
+
+Claude is the other provider:
+
+```bash
+pip install -e ".[anthropic]"
+export ANTHROPIC_API_KEY=sk-ant-...        # prepaid API credits; Pro/Max is not API access
+driftcheck run "..." --brands brands.json --provider anthropic --model claude-sonnet-5
+```
+
+Options: `--provider`, `--model`, `--max-tokens`, `--effort`, `--workers`, `--save-responses`.
 
 ---
 
@@ -66,9 +78,13 @@ The code is secondary. These are the calls that determine whether the number mea
 
 **5. N is part of the result, and there is a floor below which the tool refuses to answer.** Ten runs and a hundred runs are not comparable claims, so `n` is recorded in every output and echoed in the noise-floor note. Below 10 runs per batch, or 5 mentions for a rank comparison, `compare` returns `underpowered` and says why. It does not fall back to a verdict it can't support.
 
-**6. Model parameters are recorded — including the ones you cannot set.** Current Claude models (Opus 5, Sonnet 5, Opus 4.7+) **reject `temperature` outright with a 400**, and the API has no seed parameter at all. The flag exists and its value is recorded, but it defaults to unset, and the output records `temperature: null, seed: null` truthfully rather than implying a determinism knob that isn't there.
+**6. Model parameters are recorded — including the ones you cannot set.** `--temperature` defaults to unset and is only sent when you ask for it, because whether it can be sent at all depends on the provider. Current Claude models (Opus 5, Sonnet 5, Opus 4.7+) **reject `temperature` outright with a 400**, and the Anthropic API has no seed parameter. The output records `temperature: null, seed: null` truthfully rather than implying a determinism knob that isn't there.
 
-   This is worth sitting with, because it is the strongest version of the argument. On current frontier models **you cannot turn the sampling noise off.** There is no `temperature=0` escape hatch and no seed to pin. The variance is not a configuration mistake you can fix — it is a permanent property of the measurement, and the only honest response is to quantify it and report against it. That is what this tool does.
+   This is worth sitting with, because it is the strongest version of the argument. On a frontier model you may not have a determinism knob at all — and where you do have one, turning it down narrows the sampling distribution without collapsing it. The variance is not a configuration mistake you can fix. It is a property of the measurement, and the only honest response is to quantify it and report against it. That is what this tool does.
+
+**7. Providers are interchangeable; a measurement is not.** `driftcheck/providers/` holds one module per provider, each exposing five names: the env var for its key, a default model, its price list, its rate limit, a token counter, and a generate call. Nothing outside that package knows which one is in use, so adding Groq is one new file and one line in the registry. The default is Gemini on the free tier specifically so the claim in this README is checkable by anyone, not just by someone willing to spend money to audit it.
+
+   Interchangeable providers are not comparable batches. `compare` warns if the provider, model, or prompt differs between two runs — cross-provider comparison is a different question with a different noise structure, and this tool doesn't answer it.
 
 ### How the floor is computed
 
@@ -102,17 +118,22 @@ pytest                              # 25 tests over extract.py and stats.py
 python -m driftcheck.extract        # module self-checks, no API key needed
 python -m driftcheck.stats
 python -m driftcheck.compare
+python -m driftcheck.sample         # checks rate-limit pacing and loud batch failure
 ```
 
 Tests cover the two modules that are pure functions with no API calls — extraction and statistics — because those are where a silent error would invalidate every number the tool prints. They pin the decisions above: absence is never rank zero, missing values never enter a mean, the floor shrinks as `sqrt(n)`, and small batches return `underpowered` no matter how large the apparent gap.
 
-Batch failures are loud. The SDK retries transient errors; anything that survives that aborts the whole batch. A batch of 30 that quietly returned 24 is a corrupted measurement, not a smaller one.
+Batch failures are loud. Each provider retries transient errors (429s and 5xx) with backoff; anything that survives that aborts the whole batch, as does a refusal, a safety block, or an empty response. A batch of 30 that quietly returned 24 is a corrupted measurement, not a smaller one.
 
 ## Layout
 
 ```
 driftcheck/
-  sample.py    run prompt N times, collect raw responses, estimate cost
+  providers/
+    __init__.py  registry, key loading — the whole provider contract
+    gemini.py    default; REST over stdlib urllib, free tier
+    anthropic.py optional extra
+  sample.py    run prompt N times, rate-limit, collect raw responses, estimate cost
   extract.py   deterministic brand + rank extraction
   stats.py     variance, confidence intervals, noise floor
   compare.py   batch A vs batch B, three-way verdict

@@ -25,6 +25,8 @@ def compare(result_a: dict, result_b: dict) -> dict:
         warnings.append("Prompts differ; a difference here is not drift.")
     if a_meta["model"] != b_meta["model"]:
         warnings.append("Models differ; cross-model comparison is out of scope.")
+    if a_meta.get("provider") != b_meta.get("provider"):
+        warnings.append("Providers differ; cross-provider comparison is out of scope.")
 
     a_by = {b["name"]: b for b in result_a["brands"]}
     b_by = {b["name"]: b for b in result_b["brands"]}
